@@ -1,6 +1,7 @@
 require('dotenv/config');
 
 const express = require('express');
+const passport = require('passport');
 const { port } = require('./config');
 const api = require('./routes/api');
 const auth = require('./routes/auth');
@@ -9,6 +10,8 @@ const app  = express();
 
 // middleware to enable json data
 app.use(express.json());
+
+app.use(passport.initialize());
 
 app.use('/api', api);
 
