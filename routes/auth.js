@@ -21,13 +21,13 @@ const ExtractJwt = passportJWT.ExtractJwt;
 passport.use(new LocalStrategy(
     // Options
     {
-        usernameField: 'username',
+        usernameField: 'email',
         passwordField: 'password'
     },
     // Verification function
-    (username, password, done) => {
+    (email, password, done) => {
         // TODO: DB query
-        if(username === USER.username && password === USER.password) {
+        if(email === USER.email && password === USER.password) {
             return done(null, USER);
         }
         return done(null, false);
