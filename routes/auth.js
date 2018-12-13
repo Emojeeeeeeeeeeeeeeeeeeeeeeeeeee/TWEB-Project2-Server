@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { jwtOptions } = require('../config');
 const mongoose = require('mongoose');
 
-const dbURI = 'mongodb://admin:<PASSWORD>@twebkoppsilvestri-shard-00-00-y2dgh.mongodb.net:27017,twebkoppsilvestri-shard-00-01-y2dgh.mongodb.net:27017,twebkoppsilvestri-shard-00-02-y2dgh.mongodb.net:27017/test?ssl=true&replicaSet=TWEBKoppSilvestri-shard-0&authSource=admin&retryWrites=true';
+const dbURI = 'mongodb://user1:user1@twebkoppsilvestri-shard-00-00-y2dgh.mongodb.net:27017,twebkoppsilvestri-shard-00-01-y2dgh.mongodb.net:27017,twebkoppsilvestri-shard-00-02-y2dgh.mongodb.net:27017/test?ssl=true&replicaSet=TWEBKoppSilvestri-shard-0&authSource=admin&retryWrites=true';
 
 const options = {
     useNewUrlParser: true,
@@ -15,11 +15,11 @@ const options = {
   
   mongoose.connect(dbURI, options);
   
-  const userSchema = new mongoose.Schema();
+  var ObjectId = mongoose.Schema.Types.ObjectId;
 
   const messageSchema = new mongoose.Schema({
     content: { type: String, required: true },
-    likes: { type: [userSchema], required: true },
+    likes: { type: [ObjectId], required: true },
     time: { type: Date, required: true }
   });
 
@@ -27,9 +27,9 @@ const options = {
     username: { type: String, required: true },
     password: { type: String, required: true },
     email: { type: String, required: true },
-    messages: { type: [messageSchema], required: true },
-    followed: { type: [userSchema], required: true },
-    followers: { type: [userSchema], required: true }
+    messages: { type: [ObjectId], required: true },
+    followed: { type: [ObjectId], required: true },
+    followers: { type: [ObjectId], required: true }
   });
 
 const UserModel = mongoose.model('user', userSchema);
@@ -57,7 +57,9 @@ passport.use(new LocalStrategy(
     // Verification function
     (email, password, done) => {
         let USER;
-        UserModel.findOne({ email: email, password: password }, {password : 0}, function(err, obj) {if(err || !obj){console.log(obj)}else{console.log(obj)}})
+        console.log(email);
+        console.log(password);
+        UserModel.findOne({ email: "toto@tutu.tata", password: "toto" }, function(err, obj) {console.log(obj);console.log(err)})
         UserModel.findOne({ email: email, password: password }, function(err, obj) {if(err || !obj){return done(null, false)}else{return done(null, obj)}})
     }
 ));
