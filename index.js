@@ -103,13 +103,8 @@ app.use(express.json());
 
 app.use(passport.initialize());
 
-app.get('*', (request, response) => {
+app.get('/*', (request, response) => {
 	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
-
-app.get('/', (req, res, next) => {
-  res.send("hello")
-    .catch(next);
 });
 
 app.use('/api', api);
