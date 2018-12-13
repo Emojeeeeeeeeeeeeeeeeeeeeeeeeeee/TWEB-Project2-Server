@@ -103,7 +103,7 @@ app.use(passport.initialize());
 
 
 app.get('/', (req, res, next) => {
-  res.render(<div>TEST</div>)
+  res.send("hello")
     .catch(next);
 });
 
