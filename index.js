@@ -15,7 +15,13 @@ const app  = express();
 const schema = buildSchema(`
   input MessageInput {
     content: String
-    author: String
+  }
+
+  input UserInput {
+    username: String
+    password: String
+    email: String
+    image: String
   }
 
   type Message {
@@ -24,51 +30,44 @@ const schema = buildSchema(`
     author: String
   }
 
+  type User {
+    id: ID!
+    username: String!
+    password: String!
+    email: String!
+    image: String!
+  }
+
   type Mutation {
     createMessage(input: MessageInput): Message
     updateMessage(id: ID!, input: MessageInput): Message
+    createUser(input: UserInput!): User
+
   }
 
-  type RandomDie {
-    numSides: Int!
-    rollOnce: Int!
-    roll(numRolls: Int!): [Int]
-  }
- 
   type Query {
     getMessage(id: ID!): Message
-    getDie(numSides: Int): RandomDie
-    quoteOfTheDay: String
-    random: Float!
-    rollDice(numDice: Int!, numSides: Int): [Int]
+    getUser(id: ID!) : User
   }
 `);
 
 class Message {
-  constructor(id, { content, author }) {
+  constructor(id, { content }) {
     this.id = id;
     this.content = content;
-    this.author = author;
   }
 }
 
-class RandomDie{
-  constructor(numSides) {
-    this.numSides = numSides;
-  }
-
-  rollOnce(){
-    return 1 + Math.floor(Math.random() * this.numSides);
-  }
-
-  roll({ numRolls }) {
-    let output = [];
-    for (let i = 0; i < numRolls; i++){
-      output.push(this.rollOnce());
-    }
-    return output;
+class User {
+  constructor(id, { username, password, email, image}){
+    this.id = id;
+    this.username = username;
+    this.password = password;
+    this.email = email;
+    this.image = image;
   }
 }
+
 
 let fakeDatabase = {};
 // The root provides a resolver function for each API endpoint
@@ -81,7 +80,7 @@ const root = {
   },
   createMessage: ({ input }) => {
     let id = require('crypto').randomBytes(10).toString('hex');
-    fakeDatabase[id] = input;
+    fakeDatabase[id] = input; 
     return new Message(id, input);
   },
   updateMessage: ({ id, input }) => {
@@ -91,21 +90,9 @@ const root = {
     fakeDatabase[id] = input;
     return new Message(id, input);
   },
-  getDie: function ({ numSides }){
-    return new RandomDie( numSides || 6);
-  },
-  quoteOfTheDay: () => {
-    return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within';
-  },
-  random: () => {
-    return Math.random();
-  },
-  rollDice: (args) => {
-    let output = [];
-    for (let i = 0; i < args.numDice; i++){
-      output.push(1 + Math.floor(Math.random() * (args.numSides || 6 )));
-    }
-    return output;
+  createUser: ({ input }) => {
+    let id = require('crypto').randomBytes(10).toString('hex');
+    return new User(id, {input});
   },
 };
 
@@ -147,6 +134,13 @@ mutation {
 {
   getMessage(id:"b9542b3841f0e0d2be79"){
     author
+  }
+}
+
+{
+	getDie(numSides: 4){
+    roll(numRolls: 3)
+    rollOnce
   }
 }
 
