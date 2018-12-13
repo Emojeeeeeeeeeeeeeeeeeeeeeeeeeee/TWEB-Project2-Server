@@ -101,6 +101,12 @@ app.use(express.json());
 
 app.use(passport.initialize());
 
+
+app.get('/', (req, res, next) => {
+  res.render(<div>TEST</div>)
+    .catch(next);
+});
+
 app.use('/api', api);
 
 app.use('/auth', auth);
