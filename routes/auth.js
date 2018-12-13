@@ -35,13 +35,6 @@ const options = {
 const UserModel = mongoose.model('user', userSchema);
 const MessageModel = mongoose.model('message', messageSchema);
 
-const USER = {
-    id: '123456789',
-    email: 'toto@tata.com',
-    username: 'toto',
-    password: 'tata'
-}
-
 const router = express.Router();
 const LocalStrategy = passportLocal.Strategy;
 const JWTStrategy = passportJWT.Strategy;
@@ -56,11 +49,14 @@ passport.use(new LocalStrategy(
     },
     // Verification function
     (email, password, done) => {
-        let USER;
-        console.log(email);
-        console.log(password);
-        UserModel.findOne({ email: "toto@tutu.tata", password: "toto" }, function(err, obj) {console.log(obj);console.log(err)})
-        UserModel.findOne({ email: email, password: password }, function(err, obj) {if(err || !obj){return done(null, false)}else{return done(null, obj)}})
+        UserModel.findOne({ email: email, password: password }, {password : 0}, function (err, obj) {
+            if(err || !obj){
+                return done(null, false)
+            }
+            else{
+                return done(null, obj)
+            }
+        })
     }
 ));
 
