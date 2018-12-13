@@ -26,8 +26,8 @@ const schema = buildSchema(`
 
   type Message {
     id: ID!
-    content: String
-    author: String
+    content: String!
+    
   }
 
   type User {
@@ -35,7 +35,7 @@ const schema = buildSchema(`
     username: String!
     password: String!
     email: String!
-    image: String!
+    image: String
   }
 
   type Mutation {
