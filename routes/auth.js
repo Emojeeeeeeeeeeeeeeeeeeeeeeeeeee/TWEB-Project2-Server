@@ -61,7 +61,7 @@ passport.use(new LocalStrategy(
 ));
 
 // find and authenticate a user with a jwt token
-passport.use(new JWTStrategy(
+/*passport.use(new JWTStrategy(
     // Options
     {
         secretOrKey: jwtOptions.secret,
@@ -77,7 +77,7 @@ passport.use(new JWTStrategy(
         // User found
         return done(null, USER);
     }
-));
+));*/
 
 router.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
     // here, user exists => returned value from passport verification function
