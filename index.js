@@ -9,6 +9,10 @@ const api = require('./routes/api');
 const auth = require('./routes/auth');
 const app  = express();
 
+app.get('/public', (req, res) => {
+  res.send({ message: 'This is public :)' });
+});
+
 // Source: https://graphql.github.io/graphql-js/
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static('client/build'));
