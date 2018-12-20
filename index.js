@@ -12,9 +12,9 @@ const app  = express();
 
 app.use(cors());
 
-app.get('/public2', (req, res) => {
-  res.send({ message: 'This is public2 :)' });
-});
+// middleware to enable json data
+app.use(express.json());
+app.use(passport.initialize());
 
 // Source: https://graphql.github.io/graphql-js/
 if (process.env.NODE_ENV === 'production') {
@@ -105,10 +105,6 @@ const root = {
   },
 };
 
-// middleware to enable json data
-app.use(express.json());
-
-app.use(passport.initialize());
 
 app.use('/api', api);
 
@@ -124,6 +120,7 @@ app.use('/graphql', graphqlHTTP({
     rootValue: root,
     graphiql: true,
   }));
+
 
 // middleware to handle erros
 app.use((err, req, res, next) => {
