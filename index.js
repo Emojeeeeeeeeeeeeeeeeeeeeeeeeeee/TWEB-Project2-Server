@@ -10,7 +10,9 @@ const auth = require('./routes/auth');
 const app  = express();
 
 // Source: https://graphql.github.io/graphql-js/
-
+if (process.env.NODE_ENV === 'production') {
+	app.use(express.static('client/build'));
+}
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
   input MessageInput {
@@ -100,6 +102,10 @@ const root = {
 app.use(express.json());
 
 app.use(passport.initialize());
+
+app.get('/*', (request, response) => {
+	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 
 app.use('/api', api);
 
