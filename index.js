@@ -4,6 +4,7 @@ const express = require('express');
 const passport = require('passport');
 const { buildSchema } = require('graphql');
 const graphqlHTTP = require('express-graphql');
+const path = require('path');
 const { port } = require('./config');
 const api = require('./routes/api');
 const auth = require('./routes/auth');
