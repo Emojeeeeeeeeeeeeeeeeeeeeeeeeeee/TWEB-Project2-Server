@@ -17,7 +17,4 @@ router.get('/me', authenticated(), (req, res) => {
     res.send({ user: user });
 })
 
-module.exports = {
-    express,
-    api: router
-};
+module.exports = router;

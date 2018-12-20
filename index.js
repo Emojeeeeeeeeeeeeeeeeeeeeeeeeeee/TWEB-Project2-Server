@@ -1,14 +1,16 @@
 require('dotenv/config');
 
-//const express = require('express');
+const express = require('express');
 const passport = require('passport');
 const { buildSchema } = require('graphql');
 const graphqlHTTP = require('express-graphql');
-const path = require('path');
+const cors = require('cors');
 const { port } = require('./config');
-const { express, api } = require('./routes/api');
+const api = require('./routes/api');
 const auth = require('./routes/auth');
 const app  = express();
+
+app.use(cors());
 
 app.get('/public2', (req, res) => {
   res.send({ message: 'This is public2 :)' });
@@ -110,11 +112,12 @@ app.use(passport.initialize());
 
 app.use('/api', api);
 
+app.use('/auth', auth);
+
 /*app.get('/*', (request, response) => {
 	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 */
-app.use('/auth', auth);
 
 app.use('/graphql', graphqlHTTP({
     schema: schema,
