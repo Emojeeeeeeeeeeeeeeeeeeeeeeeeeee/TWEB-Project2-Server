@@ -86,4 +86,4 @@ router.post('/login', passport.authenticate('local', { session: false }), (req, 
     res.send({ user, token });
 });
 
-module.exports = router;
+module.exports = { router, UserModel, MessageModel };

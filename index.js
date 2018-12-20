@@ -7,7 +7,7 @@ const graphqlHTTP = require('express-graphql');
 const cors = require('cors');
 const { port } = require('./config');
 const api = require('./routes/api');
-const auth = require('./routes/auth');
+const { router, UserModel, MessageModel } = require('./routes/auth');
 const app  = express();
 
 app.use(cors());
@@ -36,7 +36,6 @@ const schema = buildSchema(`
   type Message {
     id: ID!
     content: String!
-    
   }
 
   type User {
@@ -49,14 +48,13 @@ const schema = buildSchema(`
 
   type Mutation {
     createMessage(input: MessageInput): Message
-    updateMessage(id: ID!, input: MessageInput): Message
+    updateMessage(email: String!, input: MessageInput): Message
     createUser(input: UserInput!): User
-
   }
 
   type Query {
     getMessage(id: ID!): Message
-    getUser(id: ID!) : User
+    getUser(email: String!) : User
   }
 `);
 
@@ -82,33 +80,33 @@ let fakeDatabase = {};
 // The root provides a resolver function for each API endpoint
 const root = {
   getMessage: ({ id }) => {
-    if(!fakeDatabase[id]){
-      throw new Error('no message exists with id ' + id);
-    }
-    return new Message(id, fakeDatabase[id]);
+    return MessageModel.findOne({ id });
   },
   createMessage: ({ input }) => {
-    let id = require('crypto').randomBytes(10).toString('hex');
-    fakeDatabase[id] = input; 
-    return new Message(id, input);
+    let newMessage = new MessageModel({ content: input.content});
+    newMessage.save();
+    return newMessage;
   },
-  updateMessage: ({ id, input }) => {
-    if(!fakeDatabase[id]){
-      throw new Error('no message exists with id ' + id);
-    }
-    fakeDatabase[id] = input;
-    return new Message(id, input);
+  updateMessage: ({ email, input }) => {
+    let message = MessageModel.findOne({ email });
+    message.content = input.content;
+    message.save();
+    return message;
   },
   createUser: ({ input }) => {
-    let id = require('crypto').randomBytes(10).toString('hex');
-    return new User(id, {input});
+    let newUser = new UserModel({ username: input.username, password: input.password, email: input.email, image: input.image });
+    newUser.save();
+    return newUser;
   },
+  getUser: ({ email }) => {
+    return UserModel.findOne({ email });
+  }
 };
 
 
 app.use('/api', api);
 
-app.use('/auth', auth);
+app.use('/auth', router);
 
 /*app.get('/*', (request, response) => {
 	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
@@ -147,12 +145,4 @@ mutation {
     author
   }
 }
-
-{
-	getDie(numSides: 4){
-    roll(numRolls: 3)
-    rollOnce
-  }
-}
-
 */
