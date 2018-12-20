@@ -9,8 +9,8 @@ const api = require('./routes/api');
 const auth = require('./routes/auth');
 const app  = express();
 
-app.get('/public', (req, res) => {
-  res.send({ message: 'This is public :)' });
+app.get('/public2', (req, res) => {
+  res.send({ message: 'This is public2 :)' });
 });
 
 // Source: https://graphql.github.io/graphql-js/
