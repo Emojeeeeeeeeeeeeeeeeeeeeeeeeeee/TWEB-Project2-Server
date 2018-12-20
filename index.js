@@ -110,10 +110,10 @@ app.use(passport.initialize());
 
 app.use('/api', api);
 
-app.get('/*', (request, response) => {
+/*app.get('/*', (request, response) => {
 	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
-
+*/
 app.use('/auth', auth);
 
 app.use('/graphql', graphqlHTTP({
