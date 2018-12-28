@@ -7,7 +7,7 @@ const graphqlHTTP = require('express-graphql');
 const cors = require('cors');
 const { port } = require('./config');
 const api = require('./routes/api');
-const { router, UserModel, MessageModel } = require('./routes/auth');
+const { router, UserModel, MessageModel, ObjectId } = require('./routes/auth');
 const app  = express();
 
 app.use(cors());
@@ -34,8 +34,9 @@ const schema = buildSchema(`
   }
 
   type Message {
-    id: ID!
+    id: String!
     content: String!
+    timestamp: String!
   }
 
   type User {
@@ -44,6 +45,7 @@ const schema = buildSchema(`
     password: String!
     email: String!
     image: String
+    messages: [ID]
   }
 
   type Mutation {
@@ -53,15 +55,16 @@ const schema = buildSchema(`
   }
 
   type Query {
-    getMessage(id: ID!): Message
+    getMessages(email: String!): [Message]
     getUser(email: String!) : User
   }
 `);
 
 class Message {
-  constructor(id, { content }) {
+  constructor(id, { content }, timestamp) {
     this.id = id;
     this.content = content;
+    this.timestamp = timestamp;
   }
 }
 
@@ -79,8 +82,9 @@ class User {
 let fakeDatabase = {};
 // The root provides a resolver function for each API endpoint
 const root = {
-  getMessage: ({ id }) => {
-    return MessageModel.findOne({ id });
+  getMessage: ({ email }) => {
+    let user = UserModel.findOne({ email });
+    return MessageModel.findOne({ email });
   },
   createMessage: ({ input }) => {
     let newMessage = new MessageModel({ content: input.content});
@@ -99,6 +103,8 @@ const root = {
     return newUser;
   },
   getUser: ({ email }) => {
+    let user = UserModel.findOne({ email });
+    //user.messages[0].id = user.messages[0].toString();
     return UserModel.findOne({ email });
   }
 };
@@ -145,4 +151,14 @@ mutation {
     author
   }
 }
+
+{
+  getUser(email:"toto@tutu.tata"){
+    id
+    username
+    email
+        messages
+  }
+}
+
 */

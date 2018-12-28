@@ -16,6 +16,9 @@ const options = {
   mongoose.connect(dbURI, options);
   
   var ObjectId = mongoose.Schema.Types.ObjectId;
+  ObjectId.prototype.valueOf = function(){
+    return this.toString();
+};
 
   const messageSchema = new mongoose.Schema({
     content: { type: String, required: true },
@@ -86,4 +89,4 @@ router.post('/login', passport.authenticate('local', { session: false }), (req, 
     res.send({ user, token });
 });
 
-module.exports = { router, UserModel, MessageModel };
+module.exports = { router, UserModel, MessageModel, ObjectId };
