@@ -45,7 +45,7 @@ const schema = buildSchema(`
     password: String!
     email: String!
     image: String
-    messages: [ID]
+    messages: [String]
   }
 
   type Mutation {
@@ -78,13 +78,15 @@ class User {
   }
 }
 
-
 let fakeDatabase = {};
 // The root provides a resolver function for each API endpoint
 const root = {
-  getMessage: ({ email }) => {
+  getMessages: ({ email }) => {
     let user = UserModel.findOne({ email });
-    return MessageModel.findOne({ email });
+    console.log(user);
+    let id = user.messages[0];
+    console.log(id);
+    return MessageModel.findOne({ id });
   },
   createMessage: ({ input }) => {
     let newMessage = new MessageModel({ content: input.content});
@@ -105,26 +107,19 @@ const root = {
   getUser: ({ email }) => {
     let user = UserModel.findOne({ email });
     //user.messages[0].id = user.messages[0].toString();
-    return UserModel.findOne({ email });
+    return user;
   }
 };
-
 
 app.use('/api', api);
 
 app.use('/auth', router);
-
-/*app.get('/*', (request, response) => {
-	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
-*/
 
 app.use('/graphql', graphqlHTTP({
     schema: schema,
     rootValue: root,
     graphiql: true,
   }));
-
 
 // middleware to handle erros
 app.use((err, req, res, next) => {
@@ -160,5 +155,4 @@ mutation {
         messages
   }
 }
-
 */
