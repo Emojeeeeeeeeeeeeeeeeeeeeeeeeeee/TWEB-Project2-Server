@@ -78,7 +78,6 @@ class User {
   }
 }
 
-
 let fakeDatabase = {};
 // The root provides a resolver function for each API endpoint
 const root = {
@@ -111,22 +110,15 @@ const root = {
   }
 };
 
-
 app.use('/api', api);
 
 app.use('/auth', router);
-
-/*app.get('/*', (request, response) => {
-	response.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-});
-*/
 
 app.use('/graphql', graphqlHTTP({
     schema: schema,
     rootValue: root,
     graphiql: true,
   }));
-
 
 // middleware to handle erros
 app.use((err, req, res, next) => {
@@ -162,5 +154,4 @@ mutation {
         messages
   }
 }
-
 */
