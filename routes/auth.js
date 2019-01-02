@@ -21,6 +21,7 @@ const options = {
   const messageSchema = new mongoose.Schema({
     author: {type: String, required: true},
     content: { type: String, required: true },
+    like: { type: Number, required: true, default: 0 },
     timestamp: { type: Date, required: true }
   });
   
@@ -30,9 +31,9 @@ const options = {
     username: { type: String, required: true },
     password: { type: String, required: true },
     email: { type: String, required: true },
-    messages: { type: [String], required: true },
-    followed: { type: [String], required: true },
-    followers: { type: [String], required: true }
+    messages: { type: [String], required: true, default: [] },
+    followed: { type: [String], required: true, default: [] },
+    followers: { type: [String], required: true, default: [] }
   });
 
 const UserModel = mongoose.model('user', userSchema);
