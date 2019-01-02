@@ -24,23 +24,25 @@ if (process.env.NODE_ENV === 'production') {
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
   input MessageInput {
-    content: String
+    content: String!
   }
 
   input UserInput {
-    username: String
-    password: String
-    email: String
+    username: String!
+    password: String!
+    email: String!
     image: String
   }
 
   type Message {
-    author: String
-    content: String
-    timestamp: String
+    id: String!
+    author: String!
+    content: String!
+    timestamp: String!
   }
 
   type User {
+    id: String!
     username: String!
     password: String!
     email: String!
@@ -62,7 +64,8 @@ const schema = buildSchema(`
 `);
 
 class Message {
-  constructor(author, { content }, timestamp) {
+  constructor(id, author, { content }, timestamp) {
+    this.id = id;
     this.auhtor = author;
     this.content = content;
     this.timestamp = timestamp;
@@ -70,7 +73,8 @@ class Message {
 }
 
 class User {
-  constructor({ username, password, email, image}){
+  constructor({ id, username, password, email, image}){
+    this.id = id;
     this.username = username;
     this.password = password;
     this.email = email;
@@ -104,8 +108,6 @@ const root = {
     return newUser;
   },
   getUser: ({ email }) => {
-    let user = UserModel.findOne({ email });
-    //user.messages[0].id = user.messages[0].toString();
     return UserModel.find({ email });
   }
 };
