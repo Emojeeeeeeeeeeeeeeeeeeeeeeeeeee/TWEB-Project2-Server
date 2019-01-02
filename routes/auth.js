@@ -15,24 +15,24 @@ const options = {
   
   mongoose.connect(dbURI, options);
   
-  var ObjectId = mongoose.Schema.Types.ObjectId;
-  ObjectId.prototype.valueOf = function(){
-    return this.toString();
-};
+  const ObjectId = mongoose.Types.ObjectId;
+
 
   const messageSchema = new mongoose.Schema({
+    author: {type: String, required: true},
     content: { type: String, required: true },
-    likes: { type: [ObjectId], required: true },
-    time: { type: Date, required: true }
+    timestamp: { type: Date, required: true }
   });
+  
+  //likes: { type: [ObjectId], required: true },
 
   const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
     email: { type: String, required: true },
-    messages: { type: [ObjectId], required: true },
-    followed: { type: [ObjectId], required: true },
-    followers: { type: [ObjectId], required: true }
+    messages: { type: [String], required: true },
+    followed: { type: [String], required: true },
+    followers: { type: [String], required: true }
   });
 
 const UserModel = mongoose.model('user', userSchema);

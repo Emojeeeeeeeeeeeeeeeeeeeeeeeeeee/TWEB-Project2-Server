@@ -9,6 +9,7 @@ const { port } = require('./config');
 const api = require('./routes/api');
 const { router, UserModel, MessageModel, ObjectId } = require('./routes/auth');
 const app  = express();
+const mongoose = require('mongoose');
 
 app.use(cors());
 
@@ -34,18 +35,17 @@ const schema = buildSchema(`
   }
 
   type Message {
-    id: String!
-    content: String!
-    timestamp: String!
+    author: String
+    content: String
+    timestamp: String
   }
 
   type User {
-    id: ID!
     username: String!
     password: String!
     email: String!
     image: String
-    messages: [ID]
+    messages: [String]
   }
 
   type Mutation {
@@ -56,21 +56,21 @@ const schema = buildSchema(`
 
   type Query {
     getMessages(email: String!): [Message]
-    getUser(email: String!) : User
+    getUser(email: String!) : [User]
+    getMessage(id: String!) : Message
   }
 `);
 
 class Message {
-  constructor(id, { content }, timestamp) {
-    this.id = id;
+  constructor(author, { content }, timestamp) {
+    this.auhtor = author;
     this.content = content;
     this.timestamp = timestamp;
   }
 }
 
 class User {
-  constructor(id, { username, password, email, image}){
-    this.id = id;
+  constructor({ username, password, email, image}){
     this.username = username;
     this.password = password;
     this.email = email;
@@ -82,9 +82,11 @@ class User {
 let fakeDatabase = {};
 // The root provides a resolver function for each API endpoint
 const root = {
-  getMessage: ({ email }) => {
-    let user = UserModel.findOne({ email });
-    return MessageModel.findOne({ email });
+  getMessages: ({ email }) => {
+    return MessageModel.find({ author: email });
+  },
+  getMessage: ({ id }) => {
+    return MessageModel.findOne({_id:new ObjectId(id) });
   },
   createMessage: ({ input }) => {
     let newMessage = new MessageModel({ content: input.content});
@@ -105,7 +107,7 @@ const root = {
   getUser: ({ email }) => {
     let user = UserModel.findOne({ email });
     //user.messages[0].id = user.messages[0].toString();
-    return UserModel.findOne({ email });
+    return UserModel.find({ email });
   }
 };
 
