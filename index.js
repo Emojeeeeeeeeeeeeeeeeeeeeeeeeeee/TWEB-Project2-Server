@@ -208,7 +208,6 @@ const root = {
           };
         resolve(null)
       })
-
     })
   },
   getUser: ({ email }) => {
