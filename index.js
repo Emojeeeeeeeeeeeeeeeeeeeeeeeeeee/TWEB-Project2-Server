@@ -38,7 +38,7 @@ const schema = buildSchema(`
     id: String!
     author: String!
     content: String!
-    like: Int!
+    like: [String]!
     timestamp: String!
   }
 
@@ -53,17 +53,16 @@ const schema = buildSchema(`
     follower: [String]!
   }
 
-  type Mutation {
-    createMessage(input: MessageInput): Message
-    updateMessage(email: String!, input: MessageInput): Message
-  }
-
   type Query {
-    getMessages(email: String!): [Message]
+    createMessage(input: MessageInput): Message
+    deleteMessage(id: String, author: String): Boolean
     getUser(email: String!) : [User]
-    getMessage(id: String!) : Message
     getMessagesFromDB(email: String!, offset: Int) : [Message]
     createUser(input: UserInput!): User
+    like(messageId: String!, userId: String!): Boolean
+    unlike(messageId: String!, userId: String!): Boolean
+    follow(targetId: String!, userId: String!): Boolean
+    unfollow(targetId: String!, userId: String!): Boolean
   }
 `);
 
@@ -94,10 +93,10 @@ class User {
 const root = {
   getMessagesFromDB: ({ email, offset}) => {
     return new Promise((resolve) => {
-    UserModel.find({email}, {email : 1, followed : 1, _id : 0}).then((data) => {
+    UserModel.find({email}, {email : 1, followed : 1, _id : 1}).then((data) => {
       data = data[0]
       userFollowedTab = data.followed
-      userFollowedTab.push(data.email)
+      userFollowedTab.push(data.id)
 
       const promises= [];
       messages = [];
@@ -105,31 +104,99 @@ const root = {
         promises.push(MessageModel.find({author: element}));
       });
       Promise.all(promises).then((data) => {
-        data = data[1]
-        data.sort(function(a, b){
+          let fullData = []
+          data.forEach(element => {
+            fullData = fullData.concat(element)
+          })
+          if(fullData.length === 0){
+            resolve(null)
+          }
+        else{
+          fullData.sort(function(a, b){
           return b.timestamp-a.timestamp;
         });
-        data = data.slice((offset*99) + offset, (offset + 1) * 99);
-        for (let i = 0; i < data.length; i++){
-          data[i] = new Message(data[i]._id, data[i].author, data[i].content, data[i].like, data[i].timestamp);
+        fullData = fullData.slice((offset*99) + offset, (offset + 1) * 99);
+        for (let i = 0; i < fullData.length; i++){
+          fullData[i] = new Message(fullData[i].id, fullData[i].author, fullData[i].content, fullData[i].like, fullData[i].timestamp);
         }
-        console.log(data[0] instanceof Message)
-        resolve(data);
+        console.log(fullData[0] instanceof Message)
+        resolve(fullData);
+      }
       })
 
     })
   })
   },
-  getMessages: ({ email }) => {
-    return MessageModel.find({ author: email });
-  },
-  getMessage: ({ id }) => {
-    return MessageModel.findOne({_id:new ObjectId(id) });
-  },
   createMessage: ({ input }) => {
+    return new Promise((resolve) => {
     let newMessage = new MessageModel({ content: input.content, author: input.author});
-    newMessage.save();
-    return newMessage;
+    newMessage.save(function(err, message){
+      const id = message.id
+      UserModel.update({_id: input.author}, {$addToSet: {messages: id}})
+      .then(res => {
+        resolve(message)
+        })
+    });
+  })
+  },
+  deleteMessage: ({id, author}) => {
+    return new Promise((resolve) => {
+    MessageModel.remove({"_id" : ObjectId(id)})
+    .then(res => {
+      UserModel.update( {'email': author}, { $pull: { "messages" : { id: ObjectId(id) } } }, false)
+      .then(res => {
+        resolve(true)
+      });
+    })
+    .catch(err => {
+      console.log(err)
+      resolve(false)
+    })
+  })
+  },
+  follow: ({targetId, userId}) => {
+    return new Promise((resolve) => {
+      //add the user to the followers of the target
+      UserModel.update({_id: targetId}, {$addToSet: {followers: userId}})
+      .then(res => {
+        //add the target to the followed list of the current user
+        UserModel.update({_id : userId}, {$addToSet : {followed: targetId}})
+        .then(res => {
+          resolve(true)
+        })
+      })
+    });
+  },
+  unfollow: ({targetId, userId}) => {
+    return new Promise((resolve) => {
+     //remove the user to the followers of the target
+     UserModel.update({_id: targetId}, {$pull: {followers: userId}})
+     .then(res => {
+       //remove the target to the followed list of the current user
+       UserModel.update({_id : userId}, {$pull : {followed: targetId}})
+       .then(res => {
+         resolve(true)
+       })
+     })
+    })
+  },
+  like: ({messageId, userId}) => {
+    return new Promise((resolve) => {
+      //add the user to the likes of the message
+      MessageModel.update({_id: messageId}, {$addToSet: {like: userId}})
+      .then(res => {
+          resolve(true)
+      })
+    })
+  },
+  unlike : ({messageId, userId}) => {
+    return new Promise((resolve) => {
+      //remove the user to the likes of the message
+      MessageModel.update({_id: messageId}, {$pull: {like: userId}})
+      .then(res => {
+          resolve(true)
+      })
+    })
   },
   createUser: ({ input }) => {
     return new Promise((resolve) => {

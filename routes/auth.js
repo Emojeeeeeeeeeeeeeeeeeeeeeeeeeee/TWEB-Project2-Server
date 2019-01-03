@@ -23,7 +23,7 @@ const options = {
   const messageSchema = new mongoose.Schema({
     author: {type: String, required: true},
     content: { type: String, required: true },
-    like: { type: Number, required: true, default: 0 },
+    like: { type: Array, required: true, default: [] },
     timestamp: { type: Date, required: true, default: Date.now }
   });
   
