@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const passport = require('passport');
 const passportLocal = require('passport-local');
@@ -63,9 +65,8 @@ passport.use(new LocalStrategy(
         })
     }
 ));
-
 // find and authenticate a user with a jwt token
-/*passport.use(new JWTStrategy(
+passport.use(new JWTStrategy(
     // Options
     {
         secretOrKey: jwtOptions.secret,
@@ -74,18 +75,19 @@ passport.use(new LocalStrategy(
     // Verification function
     (jwtPayload, done) => {
         const { userId } = jwtPayload;
+        UserModel.findOne({email:'toto@tutu.tata'}, {_id : 1}).then((USER) => {
         if(userId !== USER.id) {
             // User not found
            return done(null, false);
         }
         // User found
         return done(null, USER);
-    }
-));*/
+});
+    }));
 
 router.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
     // here, user exists => returned value from passport verification function
-    const { password, ...user } = req.user; // remove password from the const 'user'
+    let user = req.user;
     const token = jwt.sign({ userId: user.id }, jwtOptions.secret);
     res.send({ user, token });
 });
