@@ -9,7 +9,6 @@ const { port } = require('./config');
 const api = require('./routes/api');
 const { router, UserModel, MessageModel, ObjectId } = require('./routes/auth');
 const app  = express();
-const mongoose = require('mongoose');
 
 app.use(cors());
 
@@ -57,7 +56,6 @@ const schema = buildSchema(`
   type Mutation {
     createMessage(input: MessageInput): Message
     updateMessage(email: String!, input: MessageInput): Message
-    createUser(input: UserInput!): User
   }
 
   type Query {
@@ -65,6 +63,7 @@ const schema = buildSchema(`
     getUser(email: String!) : [User]
     getMessage(id: String!) : Message
     getMessagesFromDB(email: String!, offset: Int) : [Message]
+    createUser(input: UserInput!): User
   }
 `);
 
@@ -133,13 +132,15 @@ const root = {
     return newMessage;
   },
   createUser: ({ input }) => {
-    let newUser = new UserModel({ username: input.username, password: input.password, email: input.email });
-    UserModel.findOne({email: input.email}, {password: 0}).then(data => {
-      if(data === null){
-        newUser.save();
-        res.send();
-      }
-      return false;
+    return new Promise((resolve) => {
+      let newUser = new UserModel({ username: input.username, password: input.password, email: input.email });
+      UserModel.findOne({email: input.email}, {password: 0}).then(data => {
+        if(data === null){
+          newUser.save()
+          resolve(newUser)
+          };
+        resolve(null)
+      })
     })
   },
   getUser: ({ email }) => {
