@@ -137,7 +137,7 @@ const root = {
     UserModel.findOne({email: input.email}, {password: 0}).then(data => {
       if(data === null){
         newUser.save();
-        return newUser;
+        return UserModel.findOne({email: newUser.email}, {password : 0});
       }
       return null
     })
