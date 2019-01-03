@@ -24,7 +24,7 @@ const options = {
     author: {type: String, required: true},
     content: { type: String, required: true },
     like: { type: Number, required: true, default: 0 },
-    timestamp: { type: Date, required: true }
+    timestamp: { type: Date, required: true, default: Date.now }
   });
   
   //likes: { type: [ObjectId], required: true },
@@ -35,7 +35,8 @@ const options = {
     email: { type: String, required: true },
     messages: { type: [String], required: true, default: [] },
     followed: { type: [String], required: true, default: [] },
-    followers: { type: [String], required: true, default: [] }
+    followers: { type: [String], required: true, default: [] },
+    image: {type: [String], required: true, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlZvqiuGKGD-deDdZT4uZydxfhazuYIQZ9nc3TqR73ROD9i-7k"}
   });
 
 const UserModel = mongoose.model('user', userSchema);

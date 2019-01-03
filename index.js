@@ -134,11 +134,13 @@ const root = {
   },
   createUser: ({ input }) => {
     let newUser = new UserModel({ username: input.username, password: input.password, email: input.email, image: input.image });
-    UserModel.findOne({email: input.email}, {password: 0}, function(err, user){
-      if(err) throw err;
-      newUser.save();
-      return newUser;
-    });
+    UserModel.findOneAndUpdate({ email: input.email }, newUser, { upsert: true, new: true, runValidators: true })
+      .then(item => {
+        return item;
+      })
+      .catch(err => {
+        return null;
+      });
   },
   getUser: ({ email }) => {
     return UserModel.find({ email });
