@@ -48,7 +48,7 @@ const schema = buildSchema(`
     username: String!
     password: String!
     email: String!
-    image: String
+    image: String!
     messages: [String]!
     followed: [String]!
     follower: [String]!
@@ -134,8 +134,11 @@ const root = {
   },
   createUser: ({ input }) => {
     let newUser = new UserModel({ username: input.username, password: input.password, email: input.email, image: input.image });
-    newUser.save();
-    return newUser;
+    UserModel.findOne({email: input.email}, {password: 0}, function(err, user){
+      if(err) throw err;
+      newUser.save();
+      return newUser;
+    });
   },
   getUser: ({ email }) => {
     return UserModel.find({ email });
