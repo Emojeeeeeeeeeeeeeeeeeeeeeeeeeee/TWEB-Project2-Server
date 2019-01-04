@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'production') {
 const schema = buildSchema(`
   type Message {
     id: String!
-    author: String!
+    authorId: String!
     content: String!
     like: [String]!
     timestamp: String!

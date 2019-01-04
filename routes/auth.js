@@ -76,7 +76,7 @@ passport.use(new JWTStrategy(
     // Verification function
     (jwtPayload, done) => {
         const { userId } = jwtPayload;
-        UserModel.findOne({email:'toto@tutu.tata'}, {_id : 1}).then((USER) => {
+        UserModel.findOne({_id: userId.id}, {_id : 1}).then((USER) => {
         if(userId !== USER.id) {
             // User not found
            return done(null, false);

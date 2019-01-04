@@ -14,9 +14,9 @@
 
 **Message:**
 
-| id   | content | likes | time      |
-| ---- | ------- | ----- | --------- |
-|      |         |       | timeStamp |
+| id   | content | like     | time      | author   |
+| ---- | ------- | -------- | --------- | -------- |
+|      |         | user(id) | timeStamp | user(id) |
 
 
 
