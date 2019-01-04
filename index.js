@@ -45,7 +45,7 @@ const schema = buildSchema(`
     createMessage(authorId: String!, content: String!): Message
     deleteMessage(messageId: String!, authorId: String!): Boolean
     getUser(userId: String!) : [User]
-    getMessagesFromDB(authorId: String!, offset: Int) : [Message]
+    getMessagesFromDB(authorId: String!, offset: Int!) : [Message]
     createUser(username: String!, password: String!, email: String!): User
     like(messageId: String!, authorId: String!): Boolean
     unlike(messageId: String!, authorId: String!): Boolean
