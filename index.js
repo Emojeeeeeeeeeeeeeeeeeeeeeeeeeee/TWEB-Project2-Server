@@ -92,11 +92,12 @@ class User {
 // The root provides a resolver function for each API endpoint
 const root = {
   getMessagesFromDB: ({ email, offset}) => {
+    console.log("RECEIVE DEMAND");
     return new Promise((resolve) => {
     UserModel.find({email}, {email : 1, followed : 1, _id : 1}).then((data) => {
-      data = data[0]
-      userFollowedTab = data.followed
-      userFollowedTab.push(data.id)
+      data = data[0];
+      userFollowedTab = data.followed;
+      userFollowedTab.push(data.id);
 
       const promises= [];
       messages = [];
@@ -106,10 +107,11 @@ const root = {
       Promise.all(promises).then((data) => {
           let fullData = []
           data.forEach(element => {
-            fullData = fullData.concat(element)
+            fullData = fullData.concat(element);
           })
           if(fullData.length === 0){
-            resolve(null)
+            console.log("NULL");
+            resolve(null);
           }
         else{
           fullData.sort(function(a, b){
@@ -119,7 +121,7 @@ const root = {
         for (let i = 0; i < fullData.length; i++){
           fullData[i] = new Message(fullData[i].id, fullData[i].author, fullData[i].content, fullData[i].like, fullData[i].timestamp);
         }
-        console.log(fullData[0] instanceof Message)
+        console.log(fullData[0] instanceof Message);
         resolve(fullData);
       }
       })
@@ -127,14 +129,15 @@ const root = {
     })
   })
   },
-  createMessage: ({ input }) => {
+  createMessage: ({ author, content }) => {
+    console.log("inside createMessage");
     return new Promise((resolve) => {
-    let newMessage = new MessageModel({ content: input.content, author: input.author});
+    let newMessage = new MessageModel({ content: content, author: author});
     newMessage.save(function(err, message){
-      const id = message.id
-      UserModel.update({_id: input.author}, {$addToSet: {messages: id}})
+      const id = message.id;
+      UserModel.update({_id: author}, {$addToSet: {messages: id}})
       .then(res => {
-        resolve(message)
+        resolve(message);
         })
     });
   })
@@ -145,12 +148,12 @@ const root = {
     .then(res => {
       UserModel.update( {'email': author}, { $pull: { "messages" : { id: ObjectId(id) } } }, false)
       .then(res => {
-        resolve(true)
+        resolve(true);
       });
     })
-    .catch(err => {
-      console.log(err)
-      resolve(false)
+    .catch(error => {
+      console.log(error);
+      resolve(false);
     })
   })
   },
@@ -175,7 +178,7 @@ const root = {
        //remove the target to the followed list of the current user
        UserModel.update({_id : userId}, {$pull : {followed: targetId}})
        .then(res => {
-         resolve(true)
+         resolve(true);
        })
      })
     })
@@ -185,7 +188,7 @@ const root = {
       //add the user to the likes of the message
       MessageModel.update({_id: messageId}, {$addToSet: {like: userId}})
       .then(res => {
-          resolve(true)
+          resolve(true);
       })
     })
   },
@@ -194,7 +197,7 @@ const root = {
       //remove the user to the likes of the message
       MessageModel.update({_id: messageId}, {$pull: {like: userId}})
       .then(res => {
-          resolve(true)
+          resolve(true);
       })
     })
   },
@@ -203,10 +206,10 @@ const root = {
       let newUser = new UserModel({ username: input.username, password: input.password, email: input.email });
       UserModel.findOne({email: input.email}, {password: 0}).then(data => {
         if(data === null){
-          newUser.save()
-          resolve(newUser)
+          newUser.save();
+          resolve(newUser);
           };
-        resolve(null)
+        resolve(null);
       })
     })
   },
