@@ -80,7 +80,6 @@ class User {
 // The root provides a resolver function for each API endpoint
 const root = {
   getMessagesFromDB: ({ authorId, offset}) => {
-    console.log("RECEIVE DEMAND");
     return new Promise((resolve) => {
     UserModel.find({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
       data = data[0];
@@ -98,7 +97,6 @@ const root = {
             fullData = fullData.concat(element);
           })
           if(fullData.length === 0){
-            console.log("NULL");
             resolve(null);
           }
         else{
@@ -109,7 +107,6 @@ const root = {
         for (let i = 0; i < fullData.length; i++){
           fullData[i] = new Message(fullData[i].id, fullData[i].author, fullData[i].content, fullData[i].like, fullData[i].timestamp);
         }
-        console.log(fullData[0] instanceof Message);
         resolve(fullData);
       }
       })
@@ -118,7 +115,6 @@ const root = {
   })
   },
   createMessage: ({ authorId, content }) => {
-    console.log("inside createMessage");
     return new Promise((resolve) => {
     let newMessage = new MessageModel({ content: content, author: authorId});
     newMessage.save(function(err, message){
