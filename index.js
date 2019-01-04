@@ -22,18 +22,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
-  input MessageInput {
-    content: String!
-    author: String!
-  }
-
-  input UserInput {
-    username: String!
-    password: String!
-    email: String!
-    image: String
-  }
-
   type Message {
     id: String!
     author: String!
