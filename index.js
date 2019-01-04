@@ -54,22 +54,22 @@ const schema = buildSchema(`
   }
 
   type Query {
-    createMessage(input: MessageInput): Message
-    deleteMessage(id: String, author: String): Boolean
-    getUser(email: String!) : [User]
-    getMessagesFromDB(email: String!, offset: Int) : [Message]
-    createUser(input: UserInput!): User
-    like(messageId: String!, userId: String!): Boolean
-    unlike(messageId: String!, userId: String!): Boolean
+    createMessage(authorId: String!, content: String!): Message
+    deleteMessage(messageId: String!, authorId: String!): Boolean
+    getUser(userId: String!) : [User]
+    getMessagesFromDB(authorId: String!, offset: Int) : [Message]
+    createUser(username: String, password: String, email: String): User
+    like(messageId: String!, authorId: String!): Boolean
+    unlike(messageId: String!, authorId: String!): Boolean
     follow(targetId: String!, userId: String!): Boolean
     unfollow(targetId: String!, userId: String!): Boolean
   }
 `);
 
 class Message {
-  constructor(id, author, content, like, timestamp) {
+  constructor(id, authorId, content, like, timestamp) {
     this.id = id;
-    this.author = author;
+    this.authorId = authorId;
     this.content = content;
     this.like = like;
     this.timestamp = timestamp;
@@ -91,10 +91,10 @@ class User {
 
 // The root provides a resolver function for each API endpoint
 const root = {
-  getMessagesFromDB: ({ email, offset}) => {
+  getMessagesFromDB: ({ authorId, offset}) => {
     console.log("RECEIVE DEMAND");
     return new Promise((resolve) => {
-    UserModel.find({email}, {email : 1, followed : 1, _id : 1}).then((data) => {
+    UserModel.find({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
       data = data[0];
       userFollowedTab = data.followed;
       userFollowedTab.push(data.id);
@@ -129,24 +129,24 @@ const root = {
     })
   })
   },
-  createMessage: ({ author, content }) => {
+  createMessage: ({ authorId, content }) => {
     console.log("inside createMessage");
     return new Promise((resolve) => {
-    let newMessage = new MessageModel({ content: content, author: author});
+    let newMessage = new MessageModel({ content: content, author: authorId});
     newMessage.save(function(err, message){
       const id = message.id;
-      UserModel.update({_id: author}, {$addToSet: {messages: id}})
+      UserModel.update({_id: authorId}, {$addToSet: {messages: id}})
       .then(res => {
         resolve(message);
         })
     });
   })
   },
-  deleteMessage: ({id, author}) => {
+  deleteMessage: ({messageId, authorId}) => {
     return new Promise((resolve) => {
-    MessageModel.remove({"_id" : ObjectId(id)})
+    MessageModel.remove({_id : ObjectId(messageId)})
     .then(res => {
-      UserModel.update( {'email': author}, { $pull: { "messages" : { id: ObjectId(id) } } }, false)
+      UserModel.update( {_id: authorId}, { $pull: { "messages" : { id: ObjectId(messageId) } } }, false)
       .then(res => {
         resolve(true);
       });
@@ -183,38 +183,39 @@ const root = {
      })
     })
   },
-  like: ({messageId, userId}) => {
+  like: ({messageId, authorId}) => {
     return new Promise((resolve) => {
       //add the user to the likes of the message
-      MessageModel.update({_id: messageId}, {$addToSet: {like: userId}})
+      MessageModel.update({_id: messageId}, {$addToSet: {like: authorId}})
       .then(res => {
           resolve(true);
       })
     })
   },
-  unlike : ({messageId, userId}) => {
+  unlike : ({messageId, authorId}) => {
     return new Promise((resolve) => {
       //remove the user to the likes of the message
-      MessageModel.update({_id: messageId}, {$pull: {like: userId}})
+      MessageModel.update({_id: messageId}, {$pull: {like: authorId}})
       .then(res => {
           resolve(true);
       })
     })
   },
-  createUser: ({ input }) => {
+  createUser: ({ username, password, email }) => {
     return new Promise((resolve) => {
-      let newUser = new UserModel({ username: input.username, password: input.password, email: input.email });
-      UserModel.findOne({email: input.email}, {password: 0}).then(data => {
+      let newUser = new UserModel({ username, password, email });
+      UserModel.findOne({email}, {password: 0}).then(data => {
         if(data === null){
           newUser.save();
+          newUser.password = null;
           resolve(newUser);
           };
         resolve(null);
       })
     })
   },
-  getUser: ({ email }) => {
-    return UserModel.find({ email });
+  getUser: ({ userId }) => {
+    return UserModel.find({ _id : userId });
   }
 };
 
