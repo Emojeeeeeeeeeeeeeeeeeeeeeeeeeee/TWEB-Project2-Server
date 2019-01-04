@@ -51,6 +51,9 @@ const schema = buildSchema(`
     unlike(messageId: String!, authorId: String!): Boolean
     follow(targetId: String!, userId: String!): Boolean
     unfollow(targetId: String!, userId: String!): Boolean
+    getUserByEmail(email: String!): User
+    getFollowers(userId: String!): [User]
+    getFollowings(userId: String!): [User]
   }
 `);
 
@@ -81,8 +84,7 @@ class User {
 const root = {
   getMessagesFromDB: ({ authorId, offset}) => {
     return new Promise((resolve) => {
-    UserModel.find({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
-      data = data[0];
+    UserModel.findOne({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
       userFollowedTab = data.followed;
       userFollowedTab.push(data.id);
 
@@ -199,7 +201,80 @@ const root = {
     })
   },
   getUser: ({ userId }) => {
-    return UserModel.find({ _id : userId });
+    return new Promise((resolve) => {
+      UserModel.findOne({ _id : userId })
+      .then(data => {
+        resolve(data)
+      })
+      .catch(err => {
+        resolve(err);
+      })
+    })
+  },
+  getUserByEmail: ({ email }) => {
+    return new Promise((resolve) => {
+      UserModel.findOne({ email })
+      .then(data => {
+        resolve(data)
+      })
+      .catch(err => {
+        resolve(err);
+      })
+    })
+  },
+  getFollowers: ({userId}) => {
+    return new Promise((resolve) => {
+      UserModel.findOne({_id : userId}, {followers : 1})
+      .then(data => {
+        if(data === undefined || data === null || data.length === 0){
+          resolve([])
+        }
+        else{
+          const promises = []
+          const followers = data.followers
+          followers.forEach(element => {
+            promises.push(UserModel.findOne({_id : element}, {password : 0}))
+          });
+          Promise.all(promises)
+          .then(result => {
+            resolve(result)
+          })
+          .catch(err => {
+            resolve(err);
+          })
+        }
+      })
+      .catch(err => {
+        resolve(err)
+      })
+    })
+  },
+  getFollowings: ({userId}) => {
+    return new Promise((resolve) => {
+      UserModel.findOne({_id : userId}, {followed : 1})
+      .then(data => {
+        if(data === undefined || data === null || data.length === 0){
+          resolve([])
+        }
+        else{
+          const promises = []
+          const followed = data.followed
+          followed.forEach(element => {
+            promises.push(UserModel.findOne({_id : element}, {password : 0}))
+          });
+          Promise.all(promises)
+          .then(result => {
+            resolve(result)
+          })
+          .catch(err => {
+            resolve(err);
+          })
+        }
+      })
+      .catch(err => {
+        resolve(err)
+      })
+    })
   }
 };
 
