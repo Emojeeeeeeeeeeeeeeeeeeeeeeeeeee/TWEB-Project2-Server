@@ -196,11 +196,18 @@ const root = {
       let newUser = new UserModel({ username, password, email });
       UserModel.findOne({email}, {password: 0}).then(data => {
         if(data === null){
-          newUser.save();
-          newUser.password = null;
-          resolve(newUser);
-          };
-        resolve(null);
+          newUser.save()
+          .then(data => {
+            newUser.password = null;
+            resolve(newUser);
+          })
+          .catch(err => {
+            resolve(err)
+          })
+          }
+          else {
+            resolve(null)
+          }
       })
     })
   },
@@ -301,29 +308,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
     console.log(`Server OK: http://localhost:${port}`);
 });
-
-/*
-mutation {
-  createMessage(input: {
-    author: "moi", 
-    content: "que c'est beau",
-  }) {
-    id
-  }
-}
-
-{
-  getMessage(id:"b9542b3841f0e0d2be79"){
-    author
-  }
-}
-
-{
-  getUser(email:"toto@tutu.tata"){
-    id
-    username
-    email
-        messages
-  }
-}
-*/
