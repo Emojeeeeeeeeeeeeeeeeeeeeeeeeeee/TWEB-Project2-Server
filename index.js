@@ -44,11 +44,12 @@ const schema = buildSchema(`
   type Query {
     createMessage(authorId: String!, content: String!): Message
     deleteMessage(messageId: String!, authorId: String!): Boolean
-    getUser(userId: String!) : [User]
+    getUser(userId: String!) : User
     getMessagesFromDB(authorId: String!, offset: Int!) : [Message]
     createUser(username: String!, password: String!, email: String!): User
-    like(messageId: String!, authorId: String!): Boolean
-    unlike(messageId: String!, authorId: String!): Boolean
+    like(messageId: String!, userId: String!): Boolean
+    unlike(messageId: String!, userId: String!): Boolean
+    hasLike(messageId: String!, userId: String!): Boolean
     follow(targetId: String!, userId: String!): Boolean
     unfollow(targetId: String!, userId: String!): Boolean
     getUserByEmail(email: String!): User
@@ -173,21 +174,30 @@ const root = {
      })
     })
   },
-  like: ({messageId, authorId}) => {
+  like: ({messageId, userId}) => {
     return new Promise((resolve) => {
       //add the user to the likes of the message
-      MessageModel.update({_id: messageId}, {$addToSet: {like: authorId}})
+      MessageModel.update({_id: messageId}, {$addToSet: {like: userId}})
       .then(res => {
           resolve(true);
       })
     })
   },
-  unlike : ({messageId, authorId}) => {
+  unlike : ({messageId, userId}) => {
     return new Promise((resolve) => {
       //remove the user to the likes of the message
-      MessageModel.update({_id: messageId}, {$pull: {like: authorId}})
+      MessageModel.update({_id: messageId}, {$pull: {like: userId}})
       .then(res => {
           resolve(true);
+      })
+    })
+  },
+  hasLike: ({messageId, userId}) => {
+    return new Promise((resolve) => {
+      //add the user to the likes of the message
+      MessageModel.findOne({_id: messageId}, {like : 1})
+      .then(res => {
+          resolve(res.like.includes(userId));
       })
     })
   },
