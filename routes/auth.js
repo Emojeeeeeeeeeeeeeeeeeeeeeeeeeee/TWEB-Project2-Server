@@ -36,7 +36,7 @@ const options = {
     messages: { type: [String], required: true, default: [] },
     followed: { type: [String], required: true, default: [] },
     followers: { type: [String], required: true, default: [] },
-    image: {type: [String], required: true, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlZvqiuGKGD-deDdZT4uZydxfhazuYIQZ9nc3TqR73ROD9i-7k"}
+    image: {type: String, required: true, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlZvqiuGKGD-deDdZT4uZydxfhazuYIQZ9nc3TqR73ROD9i-7k"}
   });
 
 const UserModel = mongoose.model('user', userSchema);
@@ -76,7 +76,7 @@ passport.use(new JWTStrategy(
     // Verification function
     (jwtPayload, done) => {
         const { userId } = jwtPayload;
-        UserModel.findOne({_id: userId.id}, {_id : 1}).then((USER) => {
+        UserModel.findOne({_id: userId}, {_id : 1}).then((USER) => {
         if(userId !== USER.id) {
             // User not found
            return done(null, false);
