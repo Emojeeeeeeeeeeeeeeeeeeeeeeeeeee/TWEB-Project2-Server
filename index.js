@@ -37,8 +37,8 @@ const schema = buildSchema(`
     email: String!
     image: String!
     messages: [String]!
-    followed: [String]!
-    follower: [String]!
+    following: [String]!
+    followers: [String]!
   }
 
   type Query {
@@ -52,6 +52,7 @@ const schema = buildSchema(`
     hasLike(messageId: String!, userId: String!): Boolean
     follow(targetId: String!, userId: String!): Boolean
     unfollow(targetId: String!, userId: String!): Boolean
+    hasFollow(targetId: String!, userId: String!): Boolean
     getUserByEmail(email: String!): User
     getFollowers(userId: String!): [User]
     getFollowings(userId: String!): [User]
@@ -70,14 +71,14 @@ class Message {
 }
 
 class User {
-  constructor({ id, username, password, email, image, messages, followed, followers}){
+  constructor({ id, username, password, email, image, messages, following, followers}){
     this.id = id;
     this.username = username;
     this.password = password;
     this.email = email;
     this.image = image;
     this.messages = messages;
-    this.followed = followed;
+    this.following = following;
     this.followers = followers;
   }
 }
@@ -175,6 +176,15 @@ const root = {
      })
     })
   },
+  hasFollow: ({targetId, userId}) => {
+    return new Promise((resolve) => {
+      //add the user to the likes of the message
+      UserModel.findOne({_id: targetId}, {followers : 1})
+      .then(res => {
+          resolve(res.followers.includes(userId));
+      })
+    })
+  },
   like: ({messageId, userId}) => {
     return new Promise((resolve) => {
       //add the user to the likes of the message
@@ -224,7 +234,7 @@ const root = {
   },
   getUser: ({ userId }) => {
     return new Promise((resolve) => {
-      UserModel.findOne({ _id : userId })
+      UserModel.findOne({ _id : userId }, {password : 0})
       .then(data => {
         resolve(data)
       })
@@ -235,7 +245,7 @@ const root = {
   },
   getUserByEmail: ({ email }) => {
     return new Promise((resolve) => {
-      UserModel.findOne({ email })
+      UserModel.findOne({ email }, {password : 0})
       .then(data => {
         resolve(data)
       })
