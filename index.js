@@ -55,6 +55,7 @@ const schema = buildSchema(`
     getUserByEmail(email: String!): User
     getFollowers(userId: String!): [User]
     getFollowings(userId: String!): [User]
+    searchUser(pattern: String!): [User]
   }
 `);
 
@@ -291,6 +292,18 @@ const root = {
             resolve(err);
           })
         }
+      })
+      .catch(err => {
+        resolve(err)
+      })
+    })
+  },
+  searchUser: ({pattern}) => {
+    return new Promise((resolve) => {
+      console.log(pattern)
+      UserModel.find({"username" : {'$regex': pattern}}, {password : 0})
+      .then(data => {
+          resolve(data)
       })
       .catch(err => {
         resolve(err)
