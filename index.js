@@ -88,7 +88,7 @@ const root = {
   getMessagesFromDB: ({ authorId, offset}) => {
     return new Promise((resolve) => {
     UserModel.findOne({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
-      userFollowedTab = data.followed;
+      userFollowedTab = data.followed === undefined ? [] : data.followed;
       userFollowedTab.push(data.id);
 
       const promises= [];
