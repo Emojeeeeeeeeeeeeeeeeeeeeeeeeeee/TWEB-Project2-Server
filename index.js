@@ -7,8 +7,9 @@ const graphqlHTTP = require('express-graphql');
 const cors = require('cors');
 const { port } = require('./config');
 const api = require('./routes/api');
-const { router, UserModel, MessageModel, ObjectId } = require('./routes/auth');
+const { router } = require('./routes/auth');
 const app  = express();
+const { schema, root } = require('./graphQL/graphQL')
 
 app.use(cors());
 
@@ -20,6 +21,7 @@ app.use(passport.initialize());
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static('client/build'));
 }
+/*
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
   type Message {
@@ -326,7 +328,7 @@ const root = {
     })
   }
 };
-
+*/
 app.use('/api', api);
 
 app.use('/auth', router);
