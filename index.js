@@ -314,7 +314,6 @@ const root = {
   },
   searchUser: ({pattern}) => {
     return new Promise((resolve) => {
-      console.log(pattern)
       UserModel.find({"username" : {'$regex': pattern}}, {password : 0})
       .then(data => {
         if(data.length === undefined || data.length === 0){
