@@ -79,7 +79,7 @@ const root = {
     let newMessage = new MessageModel({ content: content, authorId: authorId});
     newMessage.save(function(err, message){
       const id = message.id;
-      UserModel.update({_id: authorId}, {$addToSet: {messages: id}})
+      UserModel.updateOne({_id: authorId}, {$addToSet: {messages: id}})
       .then(res => {
         resolve(message);
         })
@@ -88,9 +88,9 @@ const root = {
   },
   deleteMessage: ({messageId, authorId}) => {
     return new Promise((resolve) => {
-    MessageModel.remove({_id : ObjectId(messageId)})
+    MessageModel.deleteOne({_id : ObjectId(messageId)})
     .then(res => {
-      UserModel.update( {_id: authorId}, { $pull: { "messages" : { id: ObjectId(messageId) } } }, false)
+      UserModel.updateOne( {_id: authorId}, { $pull: { "messages" : { id: ObjectId(messageId) } } }, false)
       .then(res => {
         resolve(true);
       });
@@ -105,9 +105,9 @@ const root = {
     return new Promise((resolve) => {
       const promises = []
      //add the user to the followers of the target
-     promises.push(UserModel.update({_id: targetId}, {$addToSet: {followers: userId}}))
+     promises.push(UserModel.updateOne({_id: targetId}, {$addToSet: {followers: userId}}))
      //add the target to the followed list of the current user
-     promises.push(UserModel.update({_id : userId}, {$addToSet : {following: targetId}}))
+     promises.push(UserModel.updateOne({_id : userId}, {$addToSet : {following: targetId}}))
      Promise.all(promises)
      .then(res => {
        resolve(true)
@@ -121,9 +121,9 @@ const root = {
     return new Promise((resolve) => {
       const promises = []
      //remove the user to the followers of the target
-     promises.push(UserModel.update({_id: targetId}, {$pull: {followers: userId}}))
+     promises.push(UserModel.updateOne({_id: targetId}, {$pull: {followers: userId}}))
      //remove the target to the followed list of the current user
-     promises.push(UserModel.update({_id : userId}, {$pull : {following: targetId}}))
+     promises.push(UserModel.updateOne({_id : userId}, {$pull : {following: targetId}}))
      Promise.all(promises)
      .then(res => {
        resolve(true)
@@ -145,7 +145,7 @@ const root = {
   like: ({messageId, userId}) => {
     return new Promise((resolve) => {
       //add the user to the likes of the message
-      MessageModel.update({_id: messageId}, {$addToSet: {like: userId}})
+      MessageModel.updateOne({_id: messageId}, {$addToSet: {like: userId}})
       .then(res => {
           resolve(true);
       })
@@ -154,7 +154,7 @@ const root = {
   unlike : ({messageId, userId}) => {
     return new Promise((resolve) => {
       //remove the user to the likes of the message
-      MessageModel.update({_id: messageId}, {$pull: {like: userId}})
+      MessageModel.updateOne({_id: messageId}, {$pull: {like: userId}})
       .then(res => {
           resolve(true);
       })
