@@ -34,7 +34,7 @@ const options = {
     password: { type: String, required: true },
     email: { type: String, required: true },
     messages: { type: [String], required: true, default: [] },
-    followed: { type: [String], required: true, default: [] },
+    following: { type: [String], required: true, default: [] },
     followers: { type: [String], required: true, default: [] },
     image: {type: String, required: true, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlZvqiuGKGD-deDdZT4uZydxfhazuYIQZ9nc3TqR73ROD9i-7k"}
   });
