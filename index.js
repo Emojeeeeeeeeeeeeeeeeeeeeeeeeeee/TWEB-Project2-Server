@@ -108,7 +108,7 @@ const root = {
           fullData.sort(function(a, b){
           return b.timestamp-a.timestamp;
         });
-        fullData = fullData.slice((offset*99) + offset, (offset + 1) * 99);
+        fullData = fullData.slice((offset*999) + offset, (offset + 1) * 99);
         for (let i = 0; i < fullData.length; i++){
           fullData[i] = new Message(fullData[i].id, fullData[i].author, fullData[i].content, fullData[i].like, fullData[i].timestamp);
         }
@@ -309,7 +309,10 @@ const root = {
       console.log(pattern)
       UserModel.find({"username" : {'$regex': pattern}}, {password : 0})
       .then(data => {
-          resolve(data)
+        if(data.length === undefined || data.length === 0){
+          resolve([])
+        }
+          resolve(data.slice(0,999))
       })
       .catch(err => {
         resolve(err)
