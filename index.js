@@ -148,29 +148,35 @@ const root = {
   },
   follow: ({targetId, userId}) => {
     return new Promise((resolve) => {
-      //add the user to the followers of the target
-      UserModel.update({_id: targetId}, {$addToSet: {followers: userId}})
-      .then(res => {
-        //add the target to the followed list of the current user
-        UserModel.update({_id : userId}, {$addToSet : {followed: targetId}})
-        .then(res => {
-          resolve(true)
-        })
-      })
+      const promises = []
+     //add the user to the followers of the target
+     promises.push(UserModel.update({_id: targetId}, {$addToSet: {followers: userId}}))
+     //add the target to the followed list of the current user
+     promises.push(UserModel.update({_id : userId}, {$addToSet : {following: targetId}}))
+     Promise.all(promises)
+     .then(res => {
+       resolve(true)
+     })
+     .catch(err => {
+       resolve(false)
+     })
     });
   },
   unfollow: ({targetId, userId}) => {
     return new Promise((resolve) => {
+      const promises = []
      //remove the user to the followers of the target
-     UserModel.update({_id: targetId}, {$pull: {followers: userId}})
+     promises.push(UserModel.update({_id: targetId}, {$pull: {followers: userId}}))
+     //remove the target to the followed list of the current user
+     promises.push(UserModel.update({_id : userId}, {$pull : {following: targetId}}))
+     Promise.all(promises)
      .then(res => {
-       //remove the target to the followed list of the current user
-       UserModel.update({_id : userId}, {$pull : {followed: targetId}})
-       .then(res => {
-         resolve(true);
-       })
+       resolve(true)
      })
-    })
+     .catch(err => {
+       resolve(false)
+     })
+     })
   },
   hasFollow: ({targetId, userId}) => {
     return new Promise((resolve) => {
