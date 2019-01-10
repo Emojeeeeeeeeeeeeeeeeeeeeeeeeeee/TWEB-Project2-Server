@@ -35,9 +35,10 @@ const schema = buildSchema(`
     unfollow(targetId: String!, userId: String!): Boolean
     hasFollow(targetId: String!, userId: String!): Boolean
     getUserByEmail(email: String!): User
-    getFollowers(userId: String!): [User]
-    getFollowings(userId: String!): [User]
+    getFollowers(userId: String!, offset : Int!): [User]
+    getFollowings(userId: String!, offset : Int!): [User]
     searchUser(pattern: String!): [User]
+    getMessagesOfUser(userid : String!, offset : Int!) : [Message]
   }
 `);
 
@@ -66,11 +67,27 @@ const root = {
           fullData.sort(function(a, b){
           return b.timestamp-a.timestamp;
         });
-        resolve(fullData.slice((offset*999) + offset, (offset + 1) * 99));
+        resolve(fullData.slice((offset*999) + offset, (offset + 1) * 999));
         
       }
       })
 
+    })
+  })
+  },
+  getMessagesOfUser: ( { userId, offset }) => {
+    return new Promise((resolve) => {
+    UserModel.findOne({_id : userId})
+    .then((data) => {
+      if(data === null){
+        resolve(null)
+      }
+      else{
+        MessageModel.find({authorId : userId})
+        .then(messages => {
+          resolve(messages.slice((offset*999) + offset, (offset + 1) * 999))
+        })
+      }
     })
   })
   },
@@ -211,7 +228,7 @@ const root = {
       })
     })
   },
-  getFollowers: ({userId}) => {
+  getFollowers: ({userId, offset}) => {
     return new Promise((resolve) => {
       UserModel.findOne({_id : userId}, {followers : 1})
       .then(data => {
@@ -226,7 +243,7 @@ const root = {
           });
           Promise.all(promises)
           .then(result => {
-            resolve(result)
+            resolve(result.slice((offset*999) + offset, (offset + 1) * 999))
           })
           .catch(err => {
             resolve(err);
@@ -238,7 +255,7 @@ const root = {
       })
     })
   },
-  getFollowings: ({userId}) => {
+  getFollowings: ({userId, offset}) => {
     return new Promise((resolve) => {
       UserModel.findOne({_id : userId}, {followed : 1})
       .then(data => {
@@ -253,7 +270,7 @@ const root = {
           });
           Promise.all(promises)
           .then(result => {
-            resolve(result)
+            resolve(result.slice((offset*999) + offset, (offset + 1) * 999))
           })
           .catch(err => {
             resolve(err);
