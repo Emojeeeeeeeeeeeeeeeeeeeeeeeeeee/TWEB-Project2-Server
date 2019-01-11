@@ -27,6 +27,8 @@ const schema = buildSchema(`
     createMessage(authorId: String!, content: String!): Message
     deleteMessage(messageId: String!, authorId: String!): Boolean
     getUser(userId: String!) : User
+    getUserByEmail(email: String!): User
+    getUsersByIds(ids: [String]!): [User]
     getMessagesFromDB(authorId: String!, offset: Int!) : [Message]
     createUser(username: String!, password: String!, email: String!): User
     like(messageId: String!, userId: String!): Boolean
@@ -35,7 +37,6 @@ const schema = buildSchema(`
     follow(targetId: String!, userId: String!): Boolean
     unfollow(targetId: String!, userId: String!): Boolean
     hasFollow(targetId: String!, userId: String!): Boolean
-    getUserByEmail(email: String!): User
     getFollowers(userId: String!, offset : Int!): [User]
     getFollowings(userId: String!, offset : Int!): [User]
     searchUser(pattern: String!): [User]
@@ -81,6 +82,7 @@ const root = {
     return new Promise((resolve) => {
     UserModel.findOne({_id : userId})
     .then((data) => {
+      console.log(data)
       if(data === null){
         resolve(null)
       }
@@ -222,6 +224,21 @@ const root = {
   getUserByEmail: ({ email }) => {
     return new Promise((resolve) => {
       UserModel.findOne({ email }, {password : 0})
+      .then(data => {
+        resolve(data)
+      })
+      .catch(err => {
+        resolve(err);
+      })
+    })
+  },
+  getUsersByIds: ({ ids }) => {
+    return new Promise((resolve) => {
+      const promises = []
+      ids.forEach(id => {
+        promises.push(UserModel.findOne({_id : id}, {password : 0}));
+      })
+      Promise.all(promises)
       .then(data => {
         resolve(data)
       })
