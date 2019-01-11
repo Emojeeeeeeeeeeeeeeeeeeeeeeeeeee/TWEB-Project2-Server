@@ -46,8 +46,8 @@ const schema = buildSchema(`
 const root = {
   getMessagesFromDB: ({ authorId, offset}) => {
     return new Promise((resolve) => {
-    UserModel.findOne({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
-      userFollowedTab = data.followed === undefined ? [] : data.followed;
+    UserModel.findOne({_id : authorId}, {email : 1, following : 1, _id : 1}).then((data) => {
+      userFollowedTab = data.following === undefined ? [] : data.following;
       userFollowedTab.push(data.id);
 
       const promises= [];
