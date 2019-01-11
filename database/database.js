@@ -26,7 +26,7 @@ const options = {
     messages: { type: [String], required: true, default: [] },
     following: { type: [String], required: true, default: [] },
     followers: { type: [String], required: true, default: [] },
-    image: {type: String, required: true, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlZvqiuGKGD-deDdZT4uZydxfhazuYIQZ9nc3TqR73ROD9i-7k"}
+    image: {type: String, required: true, default: "https://cdn.shopify.com/s/files/1/1061/1924/products/Nerd_with_Glasses_Emoji_2a8485bc-f136-4156-9af6-297d8522d8d1_large.png?v=1483276509"}
   });
 
 const UserModel = mongoose.model('user', userSchema);
