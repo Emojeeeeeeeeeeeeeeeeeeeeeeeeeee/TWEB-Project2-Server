@@ -1,6 +1,6 @@
 const { buildSchema } = require('graphql');
 const { UserModel, MessageModel, ObjectId } = require('../database/database');
-const { images } = require('../resources/DefaultAvatars.json')
+const {images} = require('../resources/DefaultAvatars')
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -301,7 +301,7 @@ const root = {
   },
   changeImage: ({userId, mood}) => {
     return new Promise((resolve) => {
-      UserModel.UpdateOne({_id : userId}, {image : images.mood[Math.floor(Math.random() * images.mood.length)]})
+      UserModel.updateOne({_id : userId}, {image : images[mood][Math.floor(Math.random() * images[mood].length)]})
       .then(data => {
         result = data
         result.password = "";
