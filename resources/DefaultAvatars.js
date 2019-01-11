@@ -65,7 +65,14 @@ const images = {
         "https://cdn.shopify.com/s/files/1/1061/1924/products/Tropical_Fish_Emoji_large.png?v=1480481019",
         "https://cdn.shopify.com/s/files/1/1061/1924/products/Dolphin_Emoji_large.png?v=1480481036",
         "https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Emoji_large.png?v=1480481042"
-    ]
+    ],
+
+    "surpriseme": [
+        "https://cdn.shopify.com/s/files/1/1061/1924/products/Unicorn_Emoji_large.png?v=1480481038",
+        "https://cdn.shopify.com/s/files/1/1061/1924/products/Poop_Emoji_7b204f05-eec6-4496-91b1-351acc03d2c7_large.png?v=1480481059",
+        "https://cdn.shopify.com/s/files/1/1061/1924/products/Ghost_Emoji_large.png?v=1480481053",
+        "https://avatars0.githubusercontent.com/u/45453769?s=200&v=4"
+    ],
 }
 
 module.exports = { images };
