@@ -1,5 +1,6 @@
 const { buildSchema } = require('graphql');
 const { UserModel, MessageModel, ObjectId } = require('../database/database');
+const { images } = require('../resources/DefaultAvatars.json')
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -35,9 +36,11 @@ const schema = buildSchema(`
     unfollow(targetId: String!, userId: String!): Boolean
     hasFollow(targetId: String!, userId: String!): Boolean
     getUserByEmail(email: String!): User
-    getFollowers(userId: String!): [User]
-    getFollowings(userId: String!): [User]
+    getFollowers(userId: String!, offset : Int!): [User]
+    getFollowings(userId: String!, offset : Int!): [User]
     searchUser(pattern: String!): [User]
+    getMessagesOfUser(userId : String!, offset : Int!) : [Message]
+    changeImage(userId : String!, mood : String!) : User
   }
 `);
 
@@ -45,8 +48,8 @@ const schema = buildSchema(`
 const root = {
   getMessagesFromDB: ({ authorId, offset}) => {
     return new Promise((resolve) => {
-    UserModel.findOne({_id : authorId}, {email : 1, followed : 1, _id : 1}).then((data) => {
-      userFollowedTab = data.followed === undefined ? [] : data.followed;
+    UserModel.findOne({_id : authorId}, {email : 1, following : 1, _id : 1}).then((data) => {
+      userFollowedTab = data.following === undefined ? [] : data.following;
       userFollowedTab.push(data.id);
 
       const promises= [];
@@ -66,11 +69,27 @@ const root = {
           fullData.sort(function(a, b){
           return b.timestamp-a.timestamp;
         });
-        resolve(fullData.slice((offset*999) + offset, (offset + 1) * 99));
+        resolve(fullData.slice((offset*999) + offset, (offset + 1) * 999));
         
       }
       })
 
+    })
+  })
+  },
+  getMessagesOfUser: ( { userId, offset }) => {
+    return new Promise((resolve) => {
+    UserModel.findOne({_id : userId})
+    .then((data) => {
+      if(data === null){
+        resolve(null)
+      }
+      else{
+        MessageModel.find({authorId : userId})
+        .then(messages => {
+          resolve(messages.slice((offset*999) + offset, (offset + 1) * 999))
+        })
+      }
     })
   })
   },
@@ -211,7 +230,7 @@ const root = {
       })
     })
   },
-  getFollowers: ({userId}) => {
+  getFollowers: ({userId, offset}) => {
     return new Promise((resolve) => {
       UserModel.findOne({_id : userId}, {followers : 1})
       .then(data => {
@@ -226,7 +245,7 @@ const root = {
           });
           Promise.all(promises)
           .then(result => {
-            resolve(result)
+            resolve(result.slice((offset*999) + offset, (offset + 1) * 999))
           })
           .catch(err => {
             resolve(err);
@@ -238,7 +257,7 @@ const root = {
       })
     })
   },
-  getFollowings: ({userId}) => {
+  getFollowings: ({userId, offset}) => {
     return new Promise((resolve) => {
       UserModel.findOne({_id : userId}, {followed : 1})
       .then(data => {
@@ -253,7 +272,7 @@ const root = {
           });
           Promise.all(promises)
           .then(result => {
-            resolve(result)
+            resolve(result.slice((offset*999) + offset, (offset + 1) * 999))
           })
           .catch(err => {
             resolve(err);
@@ -274,6 +293,19 @@ const root = {
           resolve([])
         }
           resolve(data.slice(0,999))
+      })
+      .catch(err => {
+        resolve(err)
+      })
+    })
+  },
+  changeImage: ({userId, mood}) => {
+    return new Promise((resolve) => {
+      UserModel.UpdateOne({_id : userId}, {image : images.mood[Math.floor(Math.random() * images.mood.length)]})
+      .then(data => {
+        result = data
+        result.password = "";
+        resolve(result);
       })
       .catch(err => {
         resolve(err)
