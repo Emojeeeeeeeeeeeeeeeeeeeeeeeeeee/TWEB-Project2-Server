@@ -258,16 +258,17 @@ const root = {
     })
   },
   getFollowings: ({userId, offset}) => {
+    console.log("IN FOLLOWINGS");
     return new Promise((resolve) => {
-      UserModel.findOne({_id : userId}, {followed : 1})
+      UserModel.findOne({_id : userId}, {following : 1})
       .then(data => {
         if(data === undefined || data === null || data.length === 0){
           resolve([])
         }
         else{
           const promises = []
-          const followed = data.followed
-          followed.forEach(element => {
+          const following = data.following
+          following.forEach(element => {
             promises.push(UserModel.findOne({_id : element}, {password : 0}))
           });
           Promise.all(promises)
