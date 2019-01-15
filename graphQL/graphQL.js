@@ -82,7 +82,6 @@ const root = {
     return new Promise((resolve) => {
     UserModel.findOne({_id : userId})
     .then((data) => {
-      console.log(data)
       if(data === null){
         resolve(null)
       }
@@ -275,7 +274,6 @@ const root = {
     })
   },
   getFollowings: ({userId, offset}) => {
-    console.log("IN FOLLOWINGS");
     return new Promise((resolve) => {
       UserModel.findOne({_id : userId}, {following : 1})
       .then(data => {
@@ -304,7 +302,6 @@ const root = {
   },
   searchUser: ({pattern}) => {
     return new Promise((resolve) => {
-      console.log(pattern)
       UserModel.find({"username" : {'$regex': pattern}}, {password : 0})
       .then(data => {
         if(data.length === undefined || data.length === 0){
