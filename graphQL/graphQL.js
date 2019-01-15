@@ -88,7 +88,11 @@ const root = {
       else{
         MessageModel.find({authorId : userId})
         .then(messages => {
-          resolve(messages.slice((offset*999) + offset, (offset + 1) * 999))
+          let fullData = messages;
+          fullData.sort(function(a, b){
+          return b.timestamp-a.timestamp;
+        });
+          resolve(fullData.slice((offset*999) + offset, (offset + 1) * 999))
         })
       }
     })
