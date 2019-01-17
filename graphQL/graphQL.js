@@ -30,6 +30,7 @@ const schema = buildSchema(`
     getUserByEmail(email: String!): User
     getUsersByIds(ids: [String]!): [User]
     getMessagesFromDB(authorId: String!, offset: Int!) : [Message]
+    getFavoriteMessages(userId: String!, offset: Int!) : [Message]
     createUser(username: String!, password: String!, email: String!): User
     like(messageId: String!, userId: String!): Boolean
     unlike(messageId: String!, userId: String!): Boolean
@@ -95,6 +96,37 @@ const root = {
           resolve(fullData.slice((offset*999) + offset, (offset + 1) * 999))
         })
       }
+    })
+  })
+  },
+  getFavoriteMessages: ( { userId, offset }) => {
+    return new Promise((resolve) => {
+    UserModel.findOne({_id : authorId}, {email : 1, following : 1, _id : 1}).then((data) => {
+      userFollowedTab = data.following === undefined ? [] : data.following;
+      userFollowedTab.push(data.id);
+
+      const promises= [];
+      messages = [];
+      userFollowedTab.forEach(element => {
+        promises.push(MessageModel.find({authorId: element, like : userId}));
+      });
+      Promise.all(promises).then((data) => {
+          let fullData = []
+          data.forEach(element => {
+            fullData = fullData.concat(element);
+          })
+          if(fullData.length === 0){
+            resolve(null);
+          }
+        else{
+          fullData.sort(function(a, b){
+          return b.timestamp-a.timestamp;
+        });
+        resolve(fullData.slice((offset*999) + offset, (offset + 1) * 999));
+        
+      }
+      })
+
     })
   })
   },
