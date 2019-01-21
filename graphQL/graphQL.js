@@ -49,7 +49,7 @@ const schema = buildSchema(`
 // The root provides a resolver function for each API endpoint
 const root = {
   getMessagesFromDB: ({ authorId, offset}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
     UserModel.findOne({_id : authorId}, {email : 1, following : 1, _id : 1}).then((data) => {
       userFollowedTab = data.following === undefined ? [] : data.following;
       userFollowedTab.push(data.id);
@@ -75,12 +75,18 @@ const root = {
         
       }
       })
+      .catch(err => {
+        reject(err);
+      })
 
+    })
+    .catch(err => {
+      reject(err);
     })
   })
   },
   getMessagesOfUser: ( { userId, offset }) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
     UserModel.findOne({_id : userId})
     .then((data) => {
       if(data === null){
@@ -95,13 +101,20 @@ const root = {
         });
           resolve(fullData.slice((offset*999) + offset, (offset + 1) * 999))
         })
+        .catch(err => {
+          reject(err);
+        })
       }
+    })
+    .catch(err => {
+      reject(err)
     })
   })
   },
   getFavoriteMessages: ( { userId, offset }) => {
-    return new Promise((resolve) => {
-    UserModel.findOne({_id : authorId}, {email : 1, following : 1, _id : 1}).then((data) => {
+    return new Promise((resolve, reject) => {
+    UserModel.findOne({_id : userId}, {email : 1, following : 1, _id : 1})
+    .then((data) => {
       userFollowedTab = data.following === undefined ? [] : data.following;
       userFollowedTab.push(data.id);
 
@@ -128,10 +141,13 @@ const root = {
       })
 
     })
+    .catch(err => {
+      reject(err);
+    })
   })
   },
   createMessage: ({ authorId, content }) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
     let newMessage = new MessageModel({ content: content, authorId: authorId});
     newMessage.save(function(err, message){
       const id = message.id;
@@ -139,11 +155,14 @@ const root = {
       .then(res => {
         resolve(message);
         })
+      .catch(err => {
+        reject(err)
+      })
     });
   })
   },
   deleteMessage: ({messageId, authorId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
     MessageModel.deleteOne({_id : ObjectId(messageId)})
     .then(res => {
       UserModel.updateOne( {_id: authorId}, { $pull: { "messages" : { id: ObjectId(messageId) } } }, false)
@@ -151,14 +170,13 @@ const root = {
         resolve(true);
       });
     })
-    .catch(error => {
-      console.log(error);
-      resolve(false);
+    .catch(err => {
+      reject(err);
     })
   })
   },
   follow: ({targetId, userId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const promises = []
      //add the user to the followers of the target
      promises.push(UserModel.updateOne({_id: targetId}, {$addToSet: {followers: userId}}))
@@ -169,12 +187,12 @@ const root = {
        resolve(true)
      })
      .catch(err => {
-       resolve(false)
+       reject(err)
      })
     });
   },
   unfollow: ({targetId, userId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       const promises = []
      //remove the user to the followers of the target
      promises.push(UserModel.updateOne({_id: targetId}, {$pull: {followers: userId}}))
@@ -185,50 +203,63 @@ const root = {
        resolve(true)
      })
      .catch(err => {
-       resolve(false)
+       reject(err)
      })
      })
   },
   hasFollow: ({targetId, userId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       //add the user to the likes of the message
       UserModel.findOne({_id: targetId}, {followers : 1})
       .then(res => {
           resolve(res.followers.includes(userId));
       })
+      .catch(err => {
+        reject(err);
+      })
     })
   },
   like: ({messageId, userId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       //add the user to the likes of the message
       MessageModel.updateOne({_id: messageId}, {$addToSet: {like: userId}})
       .then(res => {
           resolve(true);
       })
+      .catch(err => {
+        reject(err);
+      })
     })
   },
   unlike : ({messageId, userId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       //remove the user to the likes of the message
       MessageModel.updateOne({_id: messageId}, {$pull: {like: userId}})
       .then(res => {
           resolve(true);
       })
+      .catch(err => {
+        reject(err);
+      })
     })
   },
   hasLike: ({messageId, userId}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       //add the user to the likes of the message
       MessageModel.findOne({_id: messageId}, {like : 1})
       .then(res => {
           resolve(res.like.includes(userId));
       })
+      .catch(err => {
+        reject(err);
+      })
     })
   },
   createUser: ({ username, password, email }) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       let newUser = new UserModel({ username, password, email });
-      UserModel.findOne({email}, {password: 0}).then(data => {
+      UserModel.findOne({email}, {password: 0})
+      .then(data => {
         if(data === null){
           newUser.save()
           .then(data => {
@@ -236,39 +267,42 @@ const root = {
             resolve(newUser);
           })
           .catch(err => {
-            resolve(err)
+            reject(err)
           })
           }
           else {
             resolve(null)
           }
       })
+      .catch(err => {
+        reject(err);
+      })
     })
   },
   getUser: ({ userId }) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       UserModel.findOne({ _id : userId }, {password : 0})
       .then(data => {
         resolve(data)
       })
       .catch(err => {
-        resolve(err);
+        reject(err);
       })
     })
   },
   getUserByEmail: ({ email }) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       UserModel.findOne({ email }, {password : 0})
       .then(data => {
         resolve(data)
       })
       .catch(err => {
-        resolve(err);
+        reject(err);
       })
     })
   },
   getUsersByIds: ({ ids }) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       const promises = []
       ids.forEach(id => {
         promises.push(UserModel.findOne({_id : id}, {password : 0}));
@@ -278,12 +312,12 @@ const root = {
         resolve(data)
       })
       .catch(err => {
-        resolve(err);
+        reject(err);
       })
     })
   },
   getFollowers: ({userId, offset}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       UserModel.findOne({_id : userId}, {followers : 1})
       .then(data => {
         if(data === undefined || data === null || data.length === 0){
@@ -305,12 +339,12 @@ const root = {
         }
       })
       .catch(err => {
-        resolve(err)
+        reject(err)
       })
     })
   },
   getFollowings: ({userId, offset}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       UserModel.findOne({_id : userId}, {following : 1})
       .then(data => {
         if(data === undefined || data === null || data.length === 0){
@@ -332,12 +366,12 @@ const root = {
         }
       })
       .catch(err => {
-        resolve(err)
+        reject(err)
       })
     })
   },
   searchUser: ({pattern}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       UserModel.find({"username" : {'$regex': pattern}}, {password : 0})
       .then(data => {
         if(data.length === undefined || data.length === 0){
@@ -346,12 +380,12 @@ const root = {
           resolve(data.slice(0,999))
       })
       .catch(err => {
-        resolve(err)
+        reject(err)
       })
     })
   },
   changeImage: ({userId, mood}) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve,reject) => {
       UserModel.updateOne({_id : userId}, {image : images[mood][Math.floor(Math.random() * images[mood].length)]})
       .then(data => {
         result = data
@@ -359,7 +393,7 @@ const root = {
         resolve(result);
       })
       .catch(err => {
-        resolve(err)
+        reject(err)
       })
     })
   }
