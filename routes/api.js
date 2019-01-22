@@ -5,16 +5,16 @@ const router = express.Router();
 const authenticated = () => passport.authenticate('jwt', { session: false });
 
 router.get('/public', (req, res) => {
-    res.send({ message: 'This is public :)' });
+  res.send({ message: 'This is public :)' });
 });
 
 router.get('/private', authenticated(), (req, res) => {
-    res.send({ message: 'Private Zone' });
+  res.send({ message: 'Private Zone' });
 });
 
 router.get('/me', authenticated(), (req, res) => {
-    const { password, ...user } = req.user; // remove password from the const 'user' 
-    res.send({ user: user });
-})
+  const { password, ...user } = req.user; // remove password from the const 'user'
+  res.send({ user });
+});
 
 module.exports = router;
